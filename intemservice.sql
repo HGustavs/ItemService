@@ -11,6 +11,6 @@ CREATE TABLE items(
 	cost 			DOUBLE (6,2),
 	starttime TIMESTAMP,
 	endtime 	TIMESTAMP,
-	info 			TEXT,
+	information		TEXT,
 	PRIMARY KEY(itemid)
 );
