@@ -3,6 +3,28 @@
 <head>
 	<title>Item submission page</title>
 	<meta charset="UTF-8">
+	<style>
+	label {
+		display:inline-block;
+		width:80px;
+		text-align: right;
+	}
+	table {
+    border-collapse: collapse;
+	}
+
+	table, th, td {
+	    border: 1px solid black;
+	}
+	tr:nth-child(even) {
+    	background: #fed;
+	} 
+
+	thead tr:nth-child(1) {
+    	background: #def;
+	} 
+
+	</style>
 </head>
 <body>
 
@@ -31,29 +53,30 @@ $us=getPost("userid");
 if($us!=null) $userid=$us;
 
 $itemname=getPost("itemname");
+$itemid=getPost("itemid");
 $kind=getPost("kind");
 $location=getPost("location");
 $size=getPost("size");
 $cost=getPost("cost");
 $starttime=getPost("starttime");
 $endtime=getPost("endtime");
-$info=getPost("info");
-$INS=getPost("INS");
-$DEL=getPost("DEL");
+$information=getPost("information");
+$action=getPost("action");
 
- echo "<form method='post' action='ItemFormService.php' id='items'>";
- echo "Userid: <input type='text' name='userid' placeholder='a12marbr' required value='".$userid."'><br>";
- echo "Itemname: <input type='text' name='itemname' placeholder='Labrador' value='".$itemname."'><br>";
- echo "Kind: <input type='text' name='kind' placeholder='Hund' value='".$kind."'><br>";
- echo "Location: <input type='text' name='location' placeholder='G&ouml;tene' value='".$location."'><br>";
- echo "Size: <input type='text' name='size' placeholder='25' value='".$size."'><br>";
- echo "Cost: <input type='text' name='cost' placeholder='1000' value='".$cost."'><br>";
- echo "Starttime: <input type='text' name='starttime' placeholder='1000' value='".$starttime."'><br>";
- echo "Endtime: <input type='text' name='endtime' placeholder='1000' value='".$endtime."'><br>";
- echo "<input type='submit' value='Submit'>";
- echo "<input type='hidden' name='INS' value='OK'>";
- echo "Info: <textarea rows='4' cols='50' name='information' form='items' placeholder='{\"Stamtavla\":[{\"far\":\"Kjell\"},{\"mor\":\"Yvonne\"}],\"alder\":12}'>".$info."</textarea>";
- echo "</form>";
+echo "<h1>Item Submission page</h1>";
+echo "<form method='post' action='ItemFormService.php' id='items'>";
+echo "<label>Userid:</label><input type='text' name='userid' placeholder='a12marbr' required value='".$userid."'><input type='submit' value='view'><br>";
+echo "<label>Itemname:</label><input type='text' name='itemname' placeholder='Labrador' value='".$itemname."'><br>";
+echo "<label>Kind:</label><input type='text' name='kind' placeholder='Hund' value='".$kind."'><br>";
+echo "<label>Location:</label><input type='text' name='location' placeholder='G&ouml;tene' value='".$location."'><br>";
+echo "<label>Size:</label><input type='text' name='size' placeholder='25' value='".$size."'><br>";
+echo "<label>Cost:</label><input type='text' name='cost' placeholder='999.99' value='".$cost."'><br>";
+echo "<label>Starttime:</label><input type='text' name='starttime' placeholder='2016-01-01 17:00:00' value='".$starttime."'><br>";
+echo "<label>Endtime:</label><input type='text' name='endtime' placeholder='2016-01-02 07:59:59' value='".$endtime."'><br>";
+echo "<label>Information:</label><textarea rows='4' cols='50' name='information' form='items' placeholder='{\"Stamtavla\":[{\"far\":\"Kjell\"},{\"mor\":\"Yvonne\"}],\"alder\":12}'>".$information."</textarea><br>";
+echo "<input type='submit' value='Submit'>";
+echo "<input type='hidden' name='action' value='INS'>";
+echo "</form>";
 
 $error=null;
 $debug = "";
@@ -72,9 +95,14 @@ try {
 }
 
 // If an insert command do the following!
-if($INS!=null){
-		$sql = "INSERT INTO items (userid,itemname,kind,location,size,cost,starttime,endtime,info) VALUES (:userid,:itemname,:kind,:location,:size,:cost,:starttime,:endtime,:info);";
+if($action === "INS"){
+		$sql = "INSERT INTO items (userid,itemname,kind,location,size,cost,starttime,endtime,information) VALUES (:userid,:itemname,:kind,:location,:size,:cost,:starttime,:endtime,:information);";
 		$query = $pdo->prepare($sql);
+
+		$info = json_decode($information);
+		if ($info === null){
+			$info = $information;
+		}
 		
 		$query->bindParam(":userid", $userid);
 		$query->bindParam(":itemname", $itemname);
@@ -84,7 +112,7 @@ if($INS!=null){
 		$query->bindParam(":cost", $cost);
 		$query->bindParam(":starttime", $starttime);
 		$query->bindParam(":endtime", $endtime);
-		$query->bindParam(":info", $info);
+		$query->bindParam(":information", json_encode($info));
 		
 		if(!$query->execute()){
 			$error=$query->errorInfo();
@@ -93,11 +121,11 @@ if($INS!=null){
 }
 
 // If a delete command do the following
-if($DEL!=null){
+if($action === "DEL"){
 		$sql = "DELETE FROM items where itemid=:itemid;";
 		$query = $pdo->prepare($sql);
-		
-		$query->bindParam(":itemid", $DEL);
+
+		$query->bindParam(":itemid", $itemid);
 		
 		if(!$query->execute()){
 			$error=$query->errorInfo();
@@ -106,15 +134,15 @@ if($DEL!=null){
 }
 
 // Irrespective of whether it is a delete or an insert we show the table!
-$query = $pdo->prepare("SELECT itemid,userid,itemname,kind,location,size,cost,starttime,endtime,info FROM items where Userid=:userid;");
+$query = $pdo->prepare("SELECT itemid,userid,itemname,kind,location,size,cost,starttime,endtime,information FROM items where Userid=:userid;");
 $query->bindParam(':userid', $userid);
 if(!$query->execute()){
 	$error=$query->errorInfo();
 	$debug="Error reading items entries ".$error[2];
 }
 
-echo "<table>";
-echo "<tr><th>itemid</th><th>itemname</th><th>kind</th><th>location</th><th>size</th><th>cost</th><th>starttime</th><th>endtime</th><th>info</th></tr>";
+echo "<table><caption>Item data stored for user <strong>".$userid."</strong></caption><thead>";
+echo "<tr><th>itemid</th><th>itemname</th><th>kind</th><th>location</th><th>size</th><th>cost</th><th>starttime</th><th>endtime</th><th>information</th><th></th></tr></thead><tbody>";
 foreach($query->fetchAll(PDO::FETCH_ASSOC) as $row){
 		echo "<tr>";
 
@@ -126,22 +154,25 @@ foreach($query->fetchAll(PDO::FETCH_ASSOC) as $row){
 		echo "<td>".$row["cost"]."</td>";
 		echo "<td>".$row["starttime"]."</td>";
 		echo "<td>".$row["endtime"]."</td>";
-		echo "<td>".$row["info"]."</td>";
+		echo "<td>".$row["information"]."</td>";
 
-		echo "<td><form method='post' action='ItemFormService.php'><input name='DEL' type='hidden' value='".$row["itemid"]."' /><input type='submit' value='DEL!' />";
-		 echo "<input type='hidden' name='userid' placeholder='a12marbr' required value='".$userid."'>";
-		 echo "<input type='hidden' name='itemname' placeholder='Labrador' value='".$itemname."'>";
-		 echo "<input type='hidden' name='kind' placeholder='Hund' value='".$kind."'>";
-		 echo "<input type='hidden' name='location' placeholder='G&ouml;tene' value='".$location."'>";
-		 echo "<input type='hidden' name='size' placeholder='25' value='".$size."'>";
-		 echo "<input type='hidden' name='cost' placeholder='1000' value='".$cost."'>";
-		 echo "<input type='hidden' name='starttime' placeholder='1000' value='".$starttime."'>";
-		 echo "<input type='hidden' name='endtime' placeholder='1000' value='".$endtime."'>";
-	echo "</form></td>";
+		echo "<td><form method='post' action='ItemFormService.php'>";
+		echo "<input type='hidden' name='action' value='DEL' />";
+		echo "<input type='hidden' name='itemid' value='".$row["itemid"]."' />";
+		echo "<input type='hidden' name='userid' placeholder='a12marbr' required value='".$userid."' />";
+		echo "<input type='hidden' name='itemname' placeholder='Labrador' value='".$itemname."' />";
+		echo "<input type='hidden' name='kind' placeholder='Hund' value='".$kind."' />";
+		echo "<input type='hidden' name='location' placeholder='G&ouml;tene' value='".$location."' />";
+		echo "<input type='hidden' name='size' placeholder='25' value='".$size."' />";
+		echo "<input type='hidden' name='cost' placeholder='999.99' value='".$cost."' />";
+		echo "<input type='hidden' name='starttime' placeholder='2016-01-01 17:00:00' value='".$starttime."' />";
+		echo "<input type='hidden' name='endtime' placeholder='2016-01-02 07:59:59' value='".$endtime."' />";
+		echo "<input type='submit' value='Delete'>";
+		echo "</form></td>";
 
 }
 
-echo "<table>";
+echo "</tbody><table>";
 
 if($error!=null){
 		echo "<pre>";
