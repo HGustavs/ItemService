@@ -80,8 +80,6 @@ echo "</form>";
 
 $error=null;
 $debug = "";
-$queryFields="Userid";
-$setFields=":userid";
 
 try {
 	$pdo = new PDO(
@@ -103,6 +101,7 @@ if($action === "INS"){
 		if ($info === null){
 			$info = $information;
 		}
+		$info = json_encode($info);
 		
 		$query->bindParam(":userid", $userid);
 		$query->bindParam(":itemname", $itemname);
@@ -112,7 +111,7 @@ if($action === "INS"){
 		$query->bindParam(":cost", $cost);
 		$query->bindParam(":starttime", $starttime);
 		$query->bindParam(":endtime", $endtime);
-		$query->bindParam(":information", json_encode($info));
+		$query->bindParam(":information", $info);
 		
 		if(!$query->execute()){
 			$error=$query->errorInfo();
