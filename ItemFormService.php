@@ -65,7 +65,7 @@ $action=getPost("action");
 
 echo "<h1>Item Submission page</h1>";
 echo "<form method='post' action='ItemFormService.php' id='items'>";
-echo "<label>Userid:</label><input type='text' name='userid' placeholder='a12marbr' required value='".$userid."'><input type='submit' value='view'><br>";
+echo "<label>Userid:</label><input type='text' name='userid' placeholder='a12marbr' required value='".$userid."'><input type='submit' name='action' value='VIEW'><br>";
 echo "<label>Itemname:</label><input type='text' name='itemname' placeholder='Labrador' value='".$itemname."'><br>";
 echo "<label>Kind:</label><input type='text' name='kind' placeholder='Hund' value='".$kind."'><br>";
 echo "<label>Location:</label><input type='text' name='location' placeholder='G&ouml;tene' value='".$location."'><br>";
@@ -74,8 +74,7 @@ echo "<label>Cost:</label><input type='text' name='cost' placeholder='999.99' va
 echo "<label>Starttime:</label><input type='text' name='starttime' placeholder='2016-01-01 17:00:00' value='".$starttime."'><br>";
 echo "<label>Endtime:</label><input type='text' name='endtime' placeholder='2016-01-02 07:59:59' value='".$endtime."'><br>";
 echo "<label>Information:</label><textarea rows='4' cols='50' name='information' form='items' placeholder='{\"Stamtavla\":[{\"far\":\"Kjell\"},{\"mor\":\"Yvonne\"}],\"alder\":12}'>".$information."</textarea><br>";
-echo "<input type='submit' value='Submit'>";
-echo "<input type='hidden' name='action' value='INS'>";
+echo "<input type='submit' name='action' value='INSERT'>";
 echo "</form>";
 
 $error=null;
@@ -93,7 +92,7 @@ try {
 }
 
 // If an insert command do the following!
-if($action === "INS"){
+if($action === "INSERT"){
 		$sql = "INSERT INTO items (userid,itemname,kind,location,size,cost,starttime,endtime,information) VALUES (:userid,:itemname,:kind,:location,:size,:cost,:starttime,:endtime,:information);";
 		$query = $pdo->prepare($sql);
 
@@ -120,7 +119,7 @@ if($action === "INS"){
 }
 
 // If a delete command do the following
-if($action === "DEL"){
+if($action === "DELETE"){
 		$sql = "DELETE FROM items where itemid=:itemid;";
 		$query = $pdo->prepare($sql);
 
@@ -156,7 +155,6 @@ foreach($query->fetchAll(PDO::FETCH_ASSOC) as $row){
 		echo "<td>".$row["information"]."</td>";
 
 		echo "<td><form method='post' action='ItemFormService.php'>";
-		echo "<input type='hidden' name='action' value='DEL' />";
 		echo "<input type='hidden' name='itemid' value='".$row["itemid"]."' />";
 		echo "<input type='hidden' name='userid' placeholder='a12marbr' required value='".$userid."' />";
 		echo "<input type='hidden' name='itemname' placeholder='Labrador' value='".$itemname."' />";
@@ -166,7 +164,7 @@ foreach($query->fetchAll(PDO::FETCH_ASSOC) as $row){
 		echo "<input type='hidden' name='cost' placeholder='999.99' value='".$cost."' />";
 		echo "<input type='hidden' name='starttime' placeholder='2016-01-01 17:00:00' value='".$starttime."' />";
 		echo "<input type='hidden' name='endtime' placeholder='2016-01-02 07:59:59' value='".$endtime."' />";
-		echo "<input type='submit' value='Delete'>";
+		echo "<input type='submit' name='action' value='DELETE'>";
 		echo "</form></td>";
 
 }
